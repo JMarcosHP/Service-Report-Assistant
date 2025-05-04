@@ -1,0 +1,29 @@
+{
+  "name": "service-report-assistant",
+  "version": "0.0.0",
+  "description": "A desktop application assistant for congregation service reports",
+  "main": "src/main/main.ts",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder",
+    "package": "electron-forge package"
+  },
+  "keywords": [
+    "electron",
+    "congregation",
+    "tracker"
+  ],
+  "author": "Jehu Marcos Herrera Puentes",
+  "license": "MIT",
+  "dependencies": {
+    "electron": "^latest",
+    "react": "^latest",
+    "react-dom": "^latest"
+  },
+  "devDependencies": {
+    "electron-builder": "^latest",
+    "electron-forge": "^latest",
+    "typescript": "^latest",
+    "ts-loader": "^latest"
+  }
+}

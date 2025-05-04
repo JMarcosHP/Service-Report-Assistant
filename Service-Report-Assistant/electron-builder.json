@@ -1,0 +1,36 @@
+{
+  "appId": "com.example.reportassistant",
+  "productName": "Report Assistant",
+  "files": [
+    "dist/**/*",
+    "src/**/*",
+    "package.json"
+  ],
+  "directories": {
+    "output": "dist"
+  },
+  "mac": {
+    "category": "public.app-category.productivity",
+    "target": [
+      "dmg",
+      "zip"
+    ]
+  },
+  "win": {
+    "target": [
+      "nsis"
+    ],
+    "icon": "src/renderer/assets/icon.ico"
+  },
+  "linux": {
+    "target": [
+      "AppImage",
+      "deb"
+    ],
+    "icon": "src/renderer/assets/icon.png"
+  },
+  "publish": {
+    "provider": "generic",
+    "url": "https://your-update-server.com/"
+  }
+}
