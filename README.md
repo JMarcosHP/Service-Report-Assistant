@@ -1,4 +1,4 @@
-# Congregation Tracker App
+# Service Report Assistant
 
 Aplicación de escritorio para generar informes. Construida con React y Electron.
 
@@ -13,8 +13,8 @@ Sigue estos pasos para configurar el entorno de desarrollo:
 
 1. Clona el repositorio:
    ```
-   git clone <url-del-repositorio>
-   cd congregation-tracker
+   git clone https://github.com/JMarcosHP/Service-Report-Assistant.git
+   cd Service-Report-Assistant
    ```
 
 2. Instala las dependencias:
