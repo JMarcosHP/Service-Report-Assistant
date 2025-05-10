@@ -930,35 +930,35 @@ const GroupTable = ({
         <table className="min-w-full bg-white border text-sm">
           <thead>
             <tr className="bg-blue-100">
-              <th className="border p-1 text-xs">Publicadores</th>
-              <th className="border p-1 text-xs w-56">Tipo de Servicio</th>
-              <th className="border p-1 text-xs">Participación</th>
+              <th className="border border-black p-1 text-xs">Publicadores</th>
+              <th className="border border-black p-1 text-xs w-56">Tipo de Servicio</th>
+              <th className="border border-black p-1 text-xs">Participación</th>
               {/* Reducir el ancho de las columnas Horas y Cursos */}
-              <th className="border p-1 text-xs w-20">Horas</th>
-              <th className="border p-1 text-xs w-20">Cursos</th>
-              <th className="border p-1 text-xs">Notas</th>
-              <th className="border p-1 text-xs">Privilegio</th>
-              <th className="border p-1 text-xs">Siervos Especiales / Voluntarios</th>
-              <th className="border p-1 text-xs w-40">Esperanza</th>
-              <th className="border p-1 text-xs w-10">Acciones</th>
+              <th className="border border-black p-1 text-xs w-20">Horas</th>
+              <th className="border border-black p-1 text-xs w-20">Cursos</th>
+              <th className="border border-black p-1 text-xs">Notas</th>
+              <th className="border border-black p-1 text-xs">Privilegio</th>
+              <th className="border border-black p-1 text-xs">Siervos Especiales / Voluntarios</th>
+              <th className="border border-black p-1 text-xs w-40">Esperanza</th>
+              <th className="border border-black p-1 text-xs w-10">Acciones</th>
             </tr>
           </thead>
           <tbody>
             {groupData.publishers.map((publisher, index) => (
               <tr key={index} className={`hover:bg-gray-50 ${publisher.isEditing ? 'bg-blue-50' : ''}`}>
-                <td className="border p-1">
+                <td className="border border-black  p-1">
                   <input 
                     type="text" 
-                    className={`w-full p-1 border rounded text-sm ${!publisher.name && publisher.isEditing ? 'border-red-500' : ''}`}
+                    className={`w-full p-1 border border-black rounded text-sm ${!publisher.name && publisher.isEditing ? 'border-red-500' : ''}`}
                     value={publisher.name || ''}
                     onChange={(e) => updatePublisher(index, 'name', e.target.value)}
                     disabled={!publisher.isEditing}
                     placeholder={publisher.isEditing ? "Nombre*" : ""}
                   />
                 </td>
-                <td className="border p-1">
+                <td className="border border-black p-1">
                   <select 
-                    className={`w-full p-1 border rounded text-center text-sm ${!publisher.serviceType && publisher.isEditing ? 'border-red-500' : ''}`}
+                    className={`w-full p-1 border border-black rounded text-center text-sm ${!publisher.serviceType && publisher.isEditing ? 'border-red-500' : ''}`}
                     value={publisher.serviceType || ''}
                     onChange={(e) => updatePublisher(index, 'serviceType', e.target.value)}
                     disabled={!publisher.isEditing}
@@ -972,9 +972,9 @@ const GroupTable = ({
                     <option value="missionary">Misionero</option>
                   </select>
                 </td>
-                <td className="border p-1">
+                <td className="border border-black p-1">
                   <select 
-                    className="w-full p-1 border rounded text-center text-sm"
+                    className="w-full p-1 border border-black rounded text-center text-sm"
                     value={publisher.participation || ''}
                     onChange={(e) => updatePublisher(index, 'participation', e.target.value)}
                     disabled={!publisher.isEditing}
@@ -984,39 +984,39 @@ const GroupTable = ({
                     <option value="inactive">No</option>
                   </select>
                 </td>
-                <td className="border p-1 w-20">
+                <td className="border border-black p-1 w-20">
                   <input 
                     type="number" 
-                    className="w-full p-1 border rounded text-center text-sm"
+                    className="w-full p-1 border border-black rounded text-center text-sm"
                     value={publisher.hours || 0}
                     onChange={(e) => updatePublisher(index, 'hours', parseInt(e.target.value) || 0)}
                     min="0"
                     disabled={isRegularPublisher(publisher) || isInactive(publisher) || !publisher.isEditing}
                   />
                 </td>
-                <td className="border p-1 w-20">
+                <td className="border border-black p-1 w-20">
                   <input 
                     type="number" 
-                    className="w-full p-1 border rounded text-center text-sm"
+                    className="w-full p-1 border border-black rounded text-center text-sm"
                     value={publisher.courses || 0}
                     onChange={(e) => updatePublisher(index, 'courses', parseInt(e.target.value) || 0)}
                     min="0"
                     disabled={isInactive(publisher) || !publisher.isEditing}
                   />
                 </td>
-                <td className="border p-1">
+                <td className="border border-black p-1">
                   <input 
                     type="text" 
-                    className="w-full p-1 border rounded text-sm"
+                    className="w-full p-1 border border-black rounded text-sm"
                     value={publisher.notes || ''}
                     onChange={(e) => updatePublisher(index, 'notes', e.target.value)}
                     disabled={!publisher.isEditing}
                   />
                 </td>
                 {/* Modificar el select de privilegio */}
-                <td className="border p-1">
+                <td className="border border-black p-1">
                   <select 
-                    className="w-full p-1 border rounded text-center text-sm"
+                    className="w-full p-1 border border-black rounded text-center text-sm"
                     value={publisher.privilege || ''}
                     onChange={(e) => updatePublisher(index, 'privilege', e.target.value)}
                     disabled={isUnbaptizedPublisher(publisher) || !publisher.isEditing}
@@ -1028,9 +1028,9 @@ const GroupTable = ({
                 </td>
 
                 {/* Modificar el select de siervos especiales */}
-                <td className="border p-1">
+                <td className="border border-black p-1">
                   <select 
-                    className="w-full p-1 border rounded text-center text-sm"
+                    className="w-full p-1 border border-black rounded text-center text-sm"
                     value={publisher.specialServants || ''}
                     onChange={(e) => updatePublisher(index, 'specialServants', e.target.value)}
                     disabled={isUnbaptizedPublisher(publisher) || !publisher.isEditing}
@@ -1045,9 +1045,9 @@ const GroupTable = ({
                     <option value="volunteerA2ToA19">Voluntario A-2 & A-19</option>
                   </select>
                 </td>
-                <td className="border p-1">
+                <td className="border border-black p-1">
                   <select 
-                    className={`w-full p-1 border rounded text-center text-sm ${!publisher.hope && publisher.isEditing ? 'border-red-500' : ''}`}
+                    className={`w-full p-1 border border-black rounded text-center text-sm ${!publisher.hope && publisher.isEditing ? 'border-red-500' : ''}`}
                     value={publisher.hope || ''}
                     onChange={(e) => updatePublisher(index, 'hope', e.target.value)}
                     disabled={isUnbaptizedPublisher(publisher) || !publisher.isEditing}
@@ -1059,7 +1059,7 @@ const GroupTable = ({
                     </option>
                   </select>
                 </td>
-                <td className="border p-1">
+                <td className="border border-black p-1">
                   <div className="flex gap-1 justify-center">
                     {publisher.isEditing ? (
                       <button 
@@ -1092,12 +1092,16 @@ const GroupTable = ({
           </tbody>
           <tfoot>
             <tr className="text-center bg-gray-200">
-              <td className="border p-1"></td>
-              <td className="border p-1"></td>
-              <td className="border p-1"></td>
-              <td className="border p-1"></td>
-              <td className="border p-1"></td>
-              <td className="border p-1" colSpan={5}></td>
+              <td className="border border-black p-1"></td>
+              <td className="border border-black p-1"></td>
+              <td className="border border-black p-1"></td>
+              <td className="border border-black p-1"></td>
+              <td className="border border-black p-1"></td>
+              <td className="border border-black p-1"></td>
+              <td className="border border-black p-1"></td>
+              <td className="border border-black p-1"></td>
+              <td className="border border-black p-1"></td>
+              <td className="border border-black p-1"></td>
             </tr>
           </tfoot>
         </table>
@@ -1108,16 +1112,16 @@ const GroupTable = ({
         <h3 className="text-base font-bold mb-2">Resumen del Grupo</h3>
         <div className="grid grid-cols-3 gap-2">
           {/* Primera columna - Informes por Tipo de Publicador */}
-          <div className="bg-white p-2 rounded shadow">
+          <div className="bg-white p-2 rounded border border-black shadow">
             <h4 className="text-sm font-semibold mb-1">Informes por Tipo de Publicador</h4>
             <table className="w-full border text-sm">
               <thead>
-                <tr className="bg-gray-100">
-                  <th className="border p-1 text-xs">Tipo</th>
-                  <th className="border p-1 text-xs">Total</th>
-                  <th className="border p-1 text-xs">Informaron</th>
-                  <th className="border p-1 text-xs">Horas</th>
-                  <th className="border p-1 text-xs">Cursos</th>
+                <tr className="bg-blue-100">
+                  <th className="border border-black p-1 text-xs">Tipo</th>
+                  <th className="border border-black p-1 text-xs">Total</th>
+                  <th className="border border-black p-1 text-xs">Informaron</th>
+                  <th className="border border-black p-1 text-xs">Horas</th>
+                  <th className="border border-black p-1 text-xs">Cursos</th>
                 </tr>
               </thead>
               <tbody>
@@ -1127,7 +1131,7 @@ const GroupTable = ({
                   
                   return Object.entries(summary).map(([type, data]) => (
                     <tr key={type}>
-                      <td className="border p-1">
+                      <td className="border border-black p-1">
                         {type === 'unbaptizedPublisher' ? 'Publicadores No Bautizados' :
                         type === 'publisher' ? 'Publicadores' :
                         type === 'auxiliarPioneer' ? 'Precursores Auxiliares' :
@@ -1135,7 +1139,7 @@ const GroupTable = ({
                         type === 'specialPioneer' ? 'Precursores Especiales' :
                         'Misioneros'}
                       </td>
-                      <td className="border p-1 text-center">
+                      <td className="border border-black p-1 text-center">
                         {type === 'unbaptizedPublisher' ? totals.unbaptizedPublishers :
                         type === 'publisher' ? totals.baptizedPublishers :
                         type === 'auxiliarPioneer' ? totals.auxiliarPioneers :
@@ -1143,30 +1147,30 @@ const GroupTable = ({
                         type === 'specialPioneer' ? totals.specialPioneers :
                         totals.missionaries}
                       </td>
-                      <td className="border p-1 text-center">{data.informes}</td>
-                      <td className="border p-1 text-center">
+                      <td className="border border-black p-1 text-center">{data.informes}</td>
+                      <td className="border border-black p-1 text-center">
                         {isRegularPublisher({serviceType: type} as Publisher) ? '-' : data.horas}
                       </td>
-                      <td className="border p-1 text-center">{data.cursos}</td>
+                      <td className="border border-black p-1 text-center">{data.cursos}</td>
                     </tr>
                   ));
                 })()}
                 <tr className="bg-gray-50 font-semibold">
-                  <td className="border p-1">Total General</td>
-                  <td className="border p-1 text-center">
+                  <td className="border border-black p-1">Total General</td>
+                  <td className="border border-black p-1 text-center">
                     {groupData.publishers.filter(p => !p.isEditing && !p.isNew).length}
                   </td>
-                  <td className="border p-1 text-center">
+                  <td className="border border-black p-1 text-center">
                     {groupData.publishers
                       .filter(p => !p.isEditing && !p.isNew && p.participation === 'active')
                       .length}
                   </td>
-                  <td className="border p-1 text-center">
+                  <td className="border border-black p-1 text-center">
                     {groupData.publishers
                       .filter(p => !p.isEditing && !p.isNew)
                       .reduce((sum, p) => sum + (isRegularPublisher(p) ? 0 : (p.hours || 0)), 0)}
                   </td>
-                  <td className="border p-1 text-center">
+                  <td className="border border-black p-1 text-center">
                     {groupData.publishers
                       .filter(p => !p.isEditing && !p.isNew)
                       .reduce((sum, p) => sum + (p.courses || 0), 0)}
@@ -1177,19 +1181,19 @@ const GroupTable = ({
           </div>
   
           {/* Segunda columna - Siervos Especiales */}
-          <div className="bg-white p-2 rounded shadow">
+          <div className="bg-white p-2 rounded border border-black shadow">
             <h4 className="text-sm font-semibold mb-1">Siervos Especiales / Voluntarios</h4>
             <table className="w-full border text-sm">
               <thead>
-                <tr className="bg-gray-100">
-                  <th className="border p-1 text-xs">Tipo</th>
-                  <th className="border p-1 text-xs">Cantidad</th>
+                <tr className="bg-blue-100">
+                  <th className="border border-black p-1 text-xs">Tipo</th>
+                  <th className="border border-black p-1 text-xs">Cantidad</th>
                 </tr>
               </thead>
               <tbody>
                 {Object.entries(calculateSpecialServants(groupData.publishers)).map(([type, count]) => (
                   <tr key={type}>
-                    <td className="border p-1">
+                    <td className="border border-black p-1">
                       {type === 'circuitOverseer' ? 'Superintendentes de Circuito' :
                       type === 'bethelite' ? 'Betelitas' :
                       type === 'construction' ? 'Siervos de construcción' :
@@ -1198,7 +1202,7 @@ const GroupTable = ({
                       type === 'volunteerA19' ? 'Voluntarios A-19' :
                       'Voluntarios A-2 & A-19'}
                     </td>
-                    <td className="border text-center p-1">{count}</td>
+                    <td className="border border-black text-center p-1">{count}</td>
                   </tr>
                 ))}
               </tbody>
@@ -1206,13 +1210,13 @@ const GroupTable = ({
           </div>
 
           {/* Nueva tercera columna - Estadísticas del Grupo */}
-          <div className="bg-white p-2 rounded shadow">
+          <div className="bg-white p-2 rounded border border-black shadow">
             <h4 className="text-sm font-semibold mb-1">Estadísticas del Grupo</h4>
             <table className="w-full border text-sm">
               <thead>
-                <tr className="bg-gray-100">
-                  <th className="border p-1 text-xs">Tipo</th>
-                  <th className="border p-1 text-xs">Cantidad</th>
+                <tr className="bg-blue-100">
+                  <th className="border border-black p-1 text-xs">Tipo</th>
+                  <th className="border border-black p-1 text-xs">Cantidad</th>
                 </tr>
               </thead>
               <tbody>
@@ -1221,25 +1225,25 @@ const GroupTable = ({
                   return (
                     <>
                       <tr>
-                        <td className="border p-1 font-semibold">Ancianos</td>
-                        <td className="border p-1 text-center">{stats.elders}</td>
+                        <td className="border border-black p-1 font-semibold">Ancianos</td>
+                        <td className="border border-black p-1 text-center">{stats.elders}</td>
                       </tr>
                       <tr>
-                        <td className="border p-1 font-semibold">Siervos Ministeriales</td>
-                        <td className="border p-1 text-center">{stats.ministerialServants}</td>
+                        <td className="border border-black p-1 font-semibold">Siervos Ministeriales</td>
+                        <td className="border border-black p-1 text-center">{stats.ministerialServants}</td>
                       </tr>
                       <tr>
-                        <td className="border p-1 font-semibold">Publicadores Inactivos</td>
-                        <td className="border p-1 text-center">{stats.inactivePublishers}</td>
+                        <td className="border border-black p-1 font-semibold">Publicadores Inactivos</td>
+                        <td className="border border-black p-1 text-center">{stats.inactivePublishers}</td>
                       </tr>
                       {/* Quitar bg-gray-50 de estas filas */}
                       <tr>
-                        <td className="border p-1 font-semibold">Otras Ovejas</td>
-                        <td className="border p-1 text-center">{stats.otherSheep}</td>
+                        <td className="border border-black p-1 font-semibold">Otras Ovejas</td>
+                        <td className="border border-black p-1 text-center">{stats.otherSheep}</td>
                       </tr>
                       <tr>
-                        <td className="border p-1 font-semibold">Ungidos</td>
-                        <td className="border p-1 text-center">{stats.anointed}</td>
+                        <td className="border border-black p-1 font-semibold">Ungidos</td>
+                        <td className="border border-black p-1 text-center">{stats.anointed}</td>
                       </tr>
                     </>
                   );
