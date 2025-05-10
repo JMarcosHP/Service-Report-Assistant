@@ -512,9 +512,9 @@ const ServiceReportAssistant = () => {
 
   return (
     <div className="flex flex-col h-screen bg-gray-100">
-      <header className="bg-blue-800 text-white p-4">
+      <header className="bg-black text-white p-4">
         <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold">Registro de Actividad de la Congregación</h1>
+          <h1 className="text-2xl font-bold">Service Report Assistant</h1>
           <div className="flex items-center space-x-4">
             <div className="relative">
               <select 
@@ -535,7 +535,7 @@ const ServiceReportAssistant = () => {
               </div>
             </div>
             <button 
-              className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded flex items-center"
+              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded flex items-center"
               onClick={createNewMonth}
             >
               <Calendar className="mr-2" size={18} />
@@ -549,7 +549,7 @@ const ServiceReportAssistant = () => {
         {/* Panel de navegación */}
         <nav 
           className={`
-            fixed md:relative inset-y-0 left-0 bg-gray-200 
+            fixed md:relative inset-y-0 left-0 bg-black 
             transform transition-all duration-300 ease-in-out z-40
             ${isNavOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
             ${isDesktopPanelExpanded ? 'w-60' : 'w-12'}
@@ -573,7 +573,7 @@ const ServiceReportAssistant = () => {
           {/* Contenido del panel */}
           <div className={`${isDesktopPanelExpanded ? 'px-4' : 'px-2'}`}>
             <h2 className={`
-              text-lg font-semibold mb-4 transition-opacity duration-300
+              text-lg text-white font-semibold mb-4 transition-opacity duration-300
               ${isDesktopPanelExpanded ? 'opacity-100' : 'opacity-0 hidden'}
             `}>
               Navegación
@@ -585,7 +585,7 @@ const ServiceReportAssistant = () => {
                   <button 
                     className={`
                       w-full rounded flex items-center justify-${isDesktopPanelExpanded ? 'start' : 'center'} p-2
-                      ${activeGroup === i+1 ? 'bg-blue-600 text-white' : 'hover:bg-gray-300'}
+                      ${activeGroup === i+1 ? 'bg-blue-600 text-white' : 'bg-black text-white hover:bg-gray-300 hover:text-black'}
                     `}
                     onClick={() => {
                       navigateToGroup(i+1);
@@ -611,7 +611,7 @@ const ServiceReportAssistant = () => {
                 <button 
                   className={`
                     w-full rounded flex items-center justify-${isDesktopPanelExpanded ? 'start' : 'center'} p-2
-                    ${activeGroup === 'averages' ? 'bg-blue-600 text-white' : 'hover:bg-gray-300'}
+                    ${activeGroup === 'averages' ? 'bg-blue-600 text-white' : 'bg-black text-white hover:bg-gray-300 hover:text-black'}
                   `}
                   onClick={() => {
                     navigateToGroup('averages');
@@ -630,18 +630,18 @@ const ServiceReportAssistant = () => {
               {/* Utilidades */}
               <li>
                 <button 
-                  className={`w-full rounded flex items-center justify-${isDesktopPanelExpanded ? 'start' : 'center'} p-2 hover:bg-gray-300`}
+                  className={`w-full rounded flex items-center justify-${isDesktopPanelExpanded ? 'start' : 'center'} p-2 bg-black text-white hover:bg-gray-300 hover:text-black`}
                   onClick={() => exportAllToPdf()}
                   title={!isDesktopPanelExpanded ? "Exportar todo" : ''}
                 >
                   <Download size={18} />
-                  {isDesktopPanelExpanded && <span className="ml-2">Exportar Todo</span>}
+                  {isDesktopPanelExpanded && <span className="ml-2">Exportar Todo a PDF</span>}
                 </button>
               </li>
               {typeof activeGroup === 'number' && (
                 <li>
                   <button 
-                    className={`w-full rounded flex items-center justify-${isDesktopPanelExpanded ? 'start' : 'center'} p-2 hover:bg-gray-300`}
+                    className={`w-full rounded flex items-center justify-${isDesktopPanelExpanded ? 'start' : 'center'} p-2 bg-black text-white hover:bg-gray-300 hover:text-black`}
                     onClick={() => exportToPdf(activeGroup)}
                     title={!isDesktopPanelExpanded ? "Exportar grupo actual" : ''}
                   >
@@ -658,7 +658,7 @@ const ServiceReportAssistant = () => {
         <div className="md:hidden">
           {!isNavOpen && (
             <button
-              className="fixed top-4 left-4 z-50 p-2 bg-white rounded-full shadow-lg hover:bg-gray-100"
+              className="fixed top-4 left-4 z-50 p-2 bg-white rounded-full shadow-lg hover:bg-gray-100 hover:text-black"
               onClick={() => setIsNavOpen(true)}
             >
               <Menu size={20} />
@@ -1225,24 +1225,24 @@ const GroupTable = ({
                   return (
                     <>
                       <tr>
-                        <td className="border border-black p-1 font-semibold">Ancianos</td>
+                        <td className="border border-black p-1">Ancianos</td>
                         <td className="border border-black p-1 text-center">{stats.elders}</td>
                       </tr>
                       <tr>
-                        <td className="border border-black p-1 font-semibold">Siervos Ministeriales</td>
+                        <td className="border border-black p-1">Siervos Ministeriales</td>
                         <td className="border border-black p-1 text-center">{stats.ministerialServants}</td>
                       </tr>
                       <tr>
-                        <td className="border border-black p-1 font-semibold">Publicadores Inactivos</td>
+                        <td className="border border-black p-1">Publicadores Inactivos</td>
                         <td className="border border-black p-1 text-center">{stats.inactivePublishers}</td>
                       </tr>
                       {/* Quitar bg-gray-50 de estas filas */}
                       <tr>
-                        <td className="border border-black p-1 font-semibold">Otras Ovejas</td>
+                        <td className="border border-black p-1">Otras Ovejas</td>
                         <td className="border border-black p-1 text-center">{stats.otherSheep}</td>
                       </tr>
                       <tr>
-                        <td className="border border-black p-1 font-semibold">Ungidos</td>
+                        <td className="border border-black p-1">Ungidos</td>
                         <td className="border border-black p-1 text-center">{stats.anointed}</td>
                       </tr>
                     </>
@@ -1267,25 +1267,25 @@ const AveragesTable = ({ totals }: AveragesTableProps) => {
       
       {/* Publicadores No Bautizados */}
       <div className="mb-1">
-        <h3 className="font-semibold bg-black text-white p-1 text-sm text-center">
+        <h3 className="font-bold bg-black text-white p-1 text-sm text-center">
           Publicadores No Bautizados
         </h3>
         <table className="w-full border text-sm">
           <tbody>
             <tr>
-              <td className="border border-black p-1 font-semibold">Informaron</td>
+              <td className="border border-black p-1">Informaron</td>
               <td className="border border-black p-1 text-center w-28">0</td>
               <td className="border border-black p-1 text-center w-28">Promedio</td>
               <td className="border border-black p-1 text-center w-28">0%</td>
             </tr>
             <tr>
-              <td className="border border-black p-1 font-semibold">Cursos</td>
+              <td className="border border-black p-1">Cursos</td>
               <td className="border border-black p-1 text-center">0</td>
               <td className="border border-black p-1 text-center">Promedio</td>
               <td className="border border-black p-1 text-center">0.00</td>
             </tr>
             <tr className="bg-gray-100">
-              <td className="border border-black p-1 font-semibold">Total de Publicadores No Bautizados</td>
+              <td className="border border-black p-1">Total de Publicadores No Bautizados</td>
               <td className="border border-black p-1 text-center" colSpan={1}>0</td>
               <td className="border border-black p-1 text-center" colSpan={2}></td>
             </tr>
@@ -1295,25 +1295,25 @@ const AveragesTable = ({ totals }: AveragesTableProps) => {
 
             {/* Publicadores */}
             <div className="mb-1">
-        <h3 className="font-semibold bg-black text-white p-1 text-sm text-center">
+        <h3 className="font-bold bg-black text-white p-1 text-sm text-center">
           Publicadores
         </h3>
         <table className="w-full border text-sm">
           <tbody>
             <tr>
-              <td className="border border-black p-1 font-semibold">Informaron</td>
+              <td className="border border-black p-1">Informaron</td>
               <td className="border border-black p-1 text-center w-28">0</td>
               <td className="border border-black p-1 text-center w-28">Promedio</td>
               <td className="border border-black p-1 text-center w-28">0%</td>
             </tr>
             <tr>
-              <td className="border border-black p-1 font-semibold">Cursos</td>
+              <td className="border border-black p-1">Cursos</td>
               <td className="border border-black p-1 text-center">0</td>
               <td className="border border-black p-1 text-center">Promedio</td>
               <td className="border border-black p-1 text-center">0.00</td>
             </tr>
             <tr className="bg-gray-100">
-              <td className="border border-black p-1 font-semibold">Total de Publicadores</td>
+              <td className="border border-black p-1">Total de Publicadores</td>
               <td className="border border-black p-1 text-center" colSpan={1}>0</td>
               <td className="border border-black p-1 text-center" colSpan={2}></td>
             </tr>
@@ -1323,31 +1323,31 @@ const AveragesTable = ({ totals }: AveragesTableProps) => {
 
             {/* Precursores Auxiliares */}
             <div className="mb-1">
-        <h3 className="font-semibold bg-black text-white p-1 text-sm text-center">
+        <h3 className="font-bold bg-black text-white p-1 text-sm text-center">
           Precursores Auxiliares
         </h3>
         <table className="w-full border text-sm">
           <tbody>
             <tr>
-              <td className="border border-black p-1 font-semibold">Informaron</td>
+              <td className="border border-black p-1">Informaron</td>
               <td className="border border-black p-1 text-center w-28">0</td>
               <td className="border border-black p-1 text-center w-28">Promedio</td>
               <td className="border border-black p-1 text-center w-28">0%</td>
             </tr>
             <tr>
-              <td className="border border-black p-1 font-semibold">Horas</td>
+              <td className="border border-black p-1">Horas</td>
               <td className="border border-black p-1 text-center">0</td>
               <td className="border border-black p-1 text-center">Promedio</td>
               <td className="border border-black p-1 text-center">0.00</td>
             </tr>
             <tr>
-              <td className="border border-black p-1 font-semibold">Cursos</td>
+              <td className="border border-black p-1">Cursos</td>
               <td className="border border-black p-1 text-center">0</td>
               <td className="border border-black p-1 text-center">Promedio</td>
               <td className="border border-black p-1 text-center">0.00</td>
             </tr>
             <tr className="bg-gray-100">
-              <td className="border border-black p-1 font-semibold">Total de Precursores Auxiliares</td>
+              <td className="border border-black p-1">Total de Precursores Auxiliares</td>
               <td className="border border-black p-1 text-center" colSpan={1}>0</td>
               <td className="border border-black p-1 text-center" colSpan={2}></td>
             </tr>
@@ -1357,31 +1357,31 @@ const AveragesTable = ({ totals }: AveragesTableProps) => {
 
       {/* Precursores Regulares */}
       <div className="mb-1">
-        <h3 className="font-semibold bg-black text-white p-1 text-sm text-center">
+        <h3 className="font-bold bg-black text-white p-1 text-sm text-center">
           Precursores Regulares
         </h3>
         <table className="w-full border text-sm">
           <tbody>
             <tr>
-              <td className="border border-black p-1 font-semibold">Informaron</td>
+              <td className="border border-black p-1">Informaron</td>
               <td className="border border-black p-1 text-center w-28">0</td>
               <td className="border border-black p-1 text-center w-28">Promedio</td>
               <td className="border border-black p-1 text-center w-28">0%</td>
             </tr>
             <tr>
-              <td className="border border-black p-1 font-semibold">Horas</td>
+              <td className="border border-black p-1">Horas</td>
               <td className="border border-black p-1 text-center">0</td>
               <td className="border border-black p-1 text-center">Promedio</td>
               <td className="border border-black p-1 text-center">0.00</td>
             </tr>
             <tr>
-              <td className="border border-black p-1 font-semibold">Cursos</td>
+              <td className="border border-black p-1">Cursos</td>
               <td className="border border-black p-1 text-center">0</td>
               <td className="border border-black p-1 text-center">Promedio</td>
               <td className="border border-black p-1 text-center">0</td>
             </tr>
             <tr className="bg-gray-100">
-              <td className="border border-black p-1 font-semibold">Total de Precursores Regulares</td>
+              <td className="border border-black p-1">Total de Precursores Regulares</td>
               <td className="border border-black p-1 text-center" colSpan={1}>0</td>
               <td className="border border-black p-1 text-center" colSpan={2}></td>
             </tr>
@@ -1391,31 +1391,31 @@ const AveragesTable = ({ totals }: AveragesTableProps) => {
 
             {/* Precursores Especiales */}
             <div className="mb-1">
-        <h3 className="font-semibold bg-black text-white p-1 text-sm text-center">
+        <h3 className="font-bold bg-black text-white p-1 text-sm text-center">
           Precursores Especiales
         </h3>
         <table className="w-full border text-sm">
           <tbody>
             <tr>
-              <td className="border border-black p-1 font-semibold">Informaron</td>
+              <td className="border border-black p-1">Informaron</td>
               <td className="border border-black p-1 text-center w-28">0</td>
               <td className="border border-black p-1 text-center w-28">Promedio</td>
               <td className="border border-black p-1 text-center w-28">0%</td>
             </tr>
             <tr>
-              <td className="border border-black p-1 font-semibold">Horas</td>
+              <td className="border border-black p-1">Horas</td>
               <td className="border border-black p-1 text-center">0</td>
               <td className="border border-black p-1 text-center">Promedio</td>
               <td className="border border-black p-1 text-center">0.00</td>
             </tr>
             <tr>
-              <td className="border border-black p-1 font-semibold">Cursos</td>
+              <td className="border border-black p-1">Cursos</td>
               <td className="border border-black p-1 text-center">0</td>
               <td className="border border-black p-1 text-center">Promedio</td>
               <td className="border border-black p-1 text-center">0.00</td>
             </tr>
             <tr className="bg-gray-100">
-              <td className="border border-black p-1 font-semibold">Total de Precursores Especiales</td>
+              <td className="border border-black p-1">Total de Precursores Especiales</td>
               <td className="border border-black p-1 text-center" colSpan={1}>0</td>
               <td className="border border-black p-1 text-center" colSpan={2}></td>
             </tr>
@@ -1425,31 +1425,31 @@ const AveragesTable = ({ totals }: AveragesTableProps) => {
 
             {/* Misioneros */}
             <div className="mb-1">
-        <h3 className="font-semibold bg-black text-white p-1 text-sm text-center">
+        <h3 className="font-bold bg-black text-white p-1 text-sm text-center">
           Misioneros
         </h3>
         <table className="w-full border text-sm">
           <tbody>
             <tr>
-              <td className="border border-black p-1 font-semibold">Informaron</td>
+              <td className="border border-black p-1">Informaron</td>
               <td className="border border-black p-1 text-center w-28">0</td>
               <td className="border border-black p-1 text-center w-28">Promedio</td>
               <td className="border border-black p-1 text-center w-28">0.00%</td>
             </tr>
             <tr>
-              <td className="border border-black p-1 font-semibold">Horas</td>
+              <td className="border border-black p-1">Horas</td>
               <td className="border border-black p-1 text-center">0</td>
               <td className="border border-black p-1 text-center">Promedio</td>
               <td className="border border-black p-1 text-center">0.00</td>
             </tr>
             <tr>
-              <td className="border border-black p-1 font-semibold">Cursos</td>
+              <td className="border border-black p-1">Cursos</td>
               <td className="border border-black p-1 text-center">0</td>
               <td className="border border-black p-1 text-center">Promedio</td>
               <td className="border border-black p-1 text-center">0.00</td>
             </tr>
             <tr className="bg-gray-100">
-              <td className="border border-black p-1 font-semibold">Total de Misioneros</td>
+              <td className="border border-black p-1">Total de Misioneros</td>
               <td className="border border-black p-1 text-center" colSpan={1}>0</td>
               <td className="border border-black p-1 text-center" colSpan={2}></td>
             </tr>
@@ -1459,7 +1459,7 @@ const AveragesTable = ({ totals }: AveragesTableProps) => {
 
       {/* Siervos Especiales */}
       <div className="mb-1">
-        <h3 className="font-semibold bg-black text-white p-1 text-sm text-center">
+        <h3 className="font-bold bg-black text-white p-1 text-sm text-center">
           Siervos Especiales de Tiempo Completo / Voluntarios
         </h3>
         <table className="w-full border text-sm">
@@ -1494,7 +1494,7 @@ const AveragesTable = ({ totals }: AveragesTableProps) => {
 
       {/* Totales */}
       <div className="mb-1">
-        <h3 className="font-semibold bg-black text-white p-1 text-sm text-center">
+        <h3 className="font-bold bg-black text-white p-1 text-sm text-center">
           Totales
         </h3>
         <table className="w-full border text-sm">
@@ -1532,7 +1532,7 @@ const AveragesTable = ({ totals }: AveragesTableProps) => {
       </div>
 
       {/* Congregación */}
-      <div className="text-center bg-black text-white p-1 text-sm">
+      <div className="font-bold text-center bg-black text-white p-1 text-sm">
         <div>Congregación</div>
         <div></div>
       </div>
