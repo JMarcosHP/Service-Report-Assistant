@@ -1,6 +1,6 @@
 {
   "name": "service-report-assistant",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Asistente para la gestión de reportes de servicio",
   "main": ".webpack/main",
   "scripts": {
