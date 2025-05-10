@@ -1,51 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Save, Trash2, FileText, Download, Calendar, Home, Menu, X } from 'lucide-react';
+import { calculateTotals, calculateGroupTotals, formatNumber, formatPercentage, Totals, Publisher, GroupData, initializeTotals } from '../utils/calculators';
 
-interface Publisher {
-  name: string;
-  serviceType: string;
-  participation: string;
-  hours: number;
-  courses: number;
-  notes: string;
-  privilege: string;
-  specialServants: string;
-  hope: string;
-  isEditing: boolean; // Nuevo campo
-  isNew: boolean; // Para distinguir nuevos publicadores
-}
-
-interface GroupData {
-  publishers: Publisher[];
-  summary: {
-    unbaptizedPublishers: { informes: number; cursos: number; total: number };
-    publishers: { informes: number; horas: number; cursos: number; total: number };
-    auxiliarPioneers: { informes: number; horas: number; cursos: number; total: number };
-    regularPioneers: { informes: number; horas: number; cursos: number; total: number };
-    specialPioneers: { informes: number; horas: number; cursos: number; total: number };
-    missionaries: { informes: number; horas: number; cursos: number; total: number };
-  };
-  specialServants?: {
-    circuitOverseers?: number;
-    bethelites?: number;
-    constructionServants?: number;
-    theocraticSchoolInstructors?: number;
-    volunteersA2?: number;
-    volunteersA19?: number;
-    volunteersA2ToA19?: number;
-  };
-  otherCategories?: {
-    otherSheep?: number;
-    anointed?: number;
-    ministerialServants?: number;
-    elders?: number;
-    activePublishers?: number;
-    inactivePublishers?: number;
-    totalCongregationPublishers?: number;
-  };
-  superintendent?: string; // Nuevo campo
-  assistant?: string; // Nuevo campo
-}
+type ActiveGroupType = number | 'averages';
 
 interface GroupTableProps {
   groupNumber: number;
@@ -53,19 +10,16 @@ interface GroupTableProps {
   addPublisher: () => void;
   updatePublisher: (index: number, field: keyof Publisher, value: any) => void;
   removePublisher: (index: number) => void;
-  savePublisher: (index: number) => void;        // Nueva prop
-  toggleEditPublisher: (index: number) => void;  // Nueva prop
-  updateGroupLeader: (field: 'superintendent' | 'assistant', value: string) => void; // Nueva prop
+  savePublisher: (index: number) => void;
+  toggleEditPublisher: (index: number) => void;
+  updateGroupLeader: (field: 'superintendent' | 'assistant', value: string) => void;
 }
 
 interface AveragesTableProps {
-  totals: {
-    [key: string]: any;
-  } ;
+  totals: Totals;
+  currentMonth: number;
+  currentYear: number;
 }
-
-// Primero definimos un tipo personalizado para activeGroup
-type ActiveGroupType = number | 'averages';
 
 // Mover la función createEmptyMonthData antes del componente
 const createEmptyMonthData = (): Record<number, GroupData> => {
@@ -74,34 +28,8 @@ const createEmptyMonthData = (): Record<number, GroupData> => {
   for (let i = 1; i <= 10; i++) {
     data[i] = {
       publishers: [],
-      summary: {
-        unbaptizedPublishers: { informes: 0, cursos: 0, total: 0 },
-        publishers: { informes: 0, horas: 0, cursos: 0, total: 0 },
-        auxiliarPioneers: { informes: 0, horas: 0, cursos: 0, total: 0 },
-        regularPioneers: { informes: 0, horas: 0, cursos: 0, total: 0 },
-        specialPioneers: { informes: 0, horas: 0, cursos: 0, total: 0 },
-        missionaries: { informes: 0, horas: 0, cursos: 0, total: 0 }
-      },
-      specialServants: {
-        circuitOverseers: 0,
-        bethelites: 0,
-        constructionServants: 0,
-        theocraticSchoolInstructors: 0,
-        volunteersA2: 0, 
-        volunteersA19: 0,
-        volunteersA2ToA19: 0
-      },
-      otherCategories: {
-        otherSheep: 0,
-        anointed: 0,
-        ministerialServants: 0,
-        elders: 0,
-        activePublishers: 0,
-        inactivePublishers: 0,
-        totalCongregationPublishers: 0
-      },
-      superintendent: '', // Inicializar nuevo campo
-      assistant: '' // Inicializar nuevo campo
+      superintendent: '',
+      assistant: ''
     };
   }
   return data;
@@ -114,50 +42,41 @@ const ServiceReportAssistant = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
   const [groupData, setGroupData] = useState<Record<number, GroupData>>(() => createEmptyMonthData());
-  const [totals, setTotals] = useState<Record<string, any>>({});
+  const [totals, setTotals] = useState<Totals>(initializeTotals());
   const [monthlyData, setMonthlyData] = useState<Record<string, Record<number, GroupData>>>({});
   const [availableMonths, setAvailableMonths] = useState<Array<{key: string; year: number; month: number}>>([]);
   const [isNavOpen, setIsNavOpen] = useState(() => {
-    // Intentar obtener la preferencia guardada, por defecto abierto
     const saved = localStorage.getItem('navPreference');
     return saved ? JSON.parse(saved) : true;
   });
 
-  // Agregar este efecto para guardar la preferencia
   useEffect(() => {
     localStorage.setItem('navPreference', JSON.stringify(isNavOpen));
   }, [isNavOpen]);
 
-  const [isPanelPinned, setIsPanelPinned] = useState(true); // Estado para fijar el panel
+  const [isPanelPinned, setIsPanelPinned] = useState(true);
 
-  // En el componente ServiceReportAssistant, agregar un nuevo estado para controlar el panel en desktop
   const [isDesktopPanelExpanded, setIsDesktopPanelExpanded] = useState(true);
   
-  // Load initial data
   useEffect(() => {
     const loadInitialData = () => {
       const initialMonthlyData: Record<string, Record<number, GroupData>> = {};
       
-      // Create data for current month and two previous months as examples
       const currentDate = new Date();
       const currentMonthKey = `${currentDate.getFullYear()}-${currentDate.getMonth()}`;
       
-      // Previous month
       const prevDate = new Date();
       prevDate.setMonth(prevDate.getMonth() - 1);
       const prevMonthKey = `${prevDate.getFullYear()}-${prevDate.getMonth()}`;
       
-      // Two months ago
       const twoMonthsAgo = new Date();
       twoMonthsAgo.setMonth(twoMonthsAgo.getMonth() - 2);
       const twoMonthsAgoKey = `${twoMonthsAgo.getFullYear()}-${twoMonthsAgo.getMonth()}`;
       
-      // Add sample data for three months with el tipado correcto
       initialMonthlyData[currentMonthKey] = createEmptyMonthData();
       initialMonthlyData[prevMonthKey] = createEmptyMonthData();
       initialMonthlyData[twoMonthsAgoKey] = createEmptyMonthData();
       
-      // Set available months for navigation
       const monthsList = [
         { key: currentMonthKey, year: currentDate.getFullYear(), month: currentDate.getMonth() },
         { key: prevMonthKey, year: prevDate.getFullYear(), month: prevDate.getMonth() },
@@ -167,40 +86,21 @@ const ServiceReportAssistant = () => {
       setMonthlyData(initialMonthlyData);
       setAvailableMonths(monthsList);
       
-      // Set current month's data as active
       setGroupData(initialMonthlyData[currentMonthKey]);
     };
     
     loadInitialData();
-  }, []); // Agregar dependencias necesarias si las hay
+  }, []);
 
-  // Calculate totals and averages
+  // Efecto para calcular totales
   useEffect(() => {
-    const calculateTotals = () => {
-      if (Object.keys(groupData).length > 0) {
-        const calculatedTotals = {
-          unbaptizedPublishers: { informes: 0, cursos: 0, promedio: 0 },
-          publishers: { informes: 0, horas: 0, cursos: 0, promedio: 0 },
-          auxiliarPioneers: { informes: 0, horas: 0, cursos: 0, promedio: 0 },
-          // ... más cálculos
-        };
-        
-        // Calcular totales
-        Object.values(groupData).forEach(group => {
-          group.publishers.forEach(pub => {
-            // Actualizar calculatedTotals según el tipo de publicador
-            // ... lógica de cálculo
-          });
-        });
-        
-        setTotals(calculatedTotals);
-      }
-    };
-    
-    calculateTotals();
+    if (Object.keys(groupData).length > 0) {
+      const groups = Object.values(groupData);
+      const calculatedTotals = calculateTotals(groups);
+      setTotals(calculatedTotals);
+    }
   }, [groupData]);
 
-  // Add a new publisher to the active group
   const addPublisher = () => {
     if (typeof activeGroup !== 'number') {
       console.error('No se puede añadir publicador en la vista de promedios');
@@ -218,31 +118,27 @@ const ServiceReportAssistant = () => {
       privilege: '',
       specialServants: '',
       hope: '',
-      isEditing: true, // Comenzar en modo edición
-      isNew: true // Marcar como nuevo publicador
+      isEditing: true,
+      isNew: true
     });
     setGroupData(updatedGroupData);
     
-    // Also update in monthly data
     const monthKey = `${currentYear}-${currentMonth}`;
     const updatedMonthlyData = {...monthlyData};
     updatedMonthlyData[monthKey] = updatedGroupData;
     setMonthlyData(updatedMonthlyData);
   };
 
-  // Update publisher data
   const updatePublisher = (index: number, field: keyof Publisher, value: any) => {
     setGroupData(prevData => {
       const newData = JSON.parse(JSON.stringify(prevData));
       if (newData[activeGroup]?.publishers?.[index]) {
-        // Si está cambiando a publicador no bautizado, limpiar campos restringidos
         if (field === 'serviceType' && value === 'unbaptizedPublisher') {
           newData[activeGroup].publishers[index].privilege = '';
           newData[activeGroup].publishers[index].specialServants = '';
-          newData[activeGroup].publishers[index].hope = 'otherSheep'; // Forzar a "Otras Ovejas"
+          newData[activeGroup].publishers[index].hope = 'otherSheep';
         }
 
-        // Si es publicador no bautizado y está intentando cambiar a ungido, prevenir
         if (field === 'hope' && 
             value === 'anointed' && 
             newData[activeGroup].publishers[index].serviceType === 'unbaptizedPublisher') {
@@ -250,7 +146,6 @@ const ServiceReportAssistant = () => {
           value = 'otherSheep';
         }
 
-        // Si está cambiando la participación a "inactive", limpiar horas y cursos
         if (field === 'participation' && value === 'inactive') {
           newData[activeGroup].publishers[index].hours = 0;
           newData[activeGroup].publishers[index].courses = 0;
@@ -258,7 +153,6 @@ const ServiceReportAssistant = () => {
 
         newData[activeGroup].publishers[index][field] = value;
         
-        // Actualizar monthlyData al mismo tiempo
         const monthKey = `${currentYear}-${currentMonth}`;
         setMonthlyData(prevMonthlyData => ({
           ...prevMonthlyData,
@@ -271,14 +165,12 @@ const ServiceReportAssistant = () => {
     });
   };
 
-  // Remove a publisher
   const removePublisher = (index: number) => {
     if (typeof activeGroup !== 'number') {
       console.error('Active group must be a number.');
       return;
     }
 
-    // Mostrar diálogo de confirmación
     if (!window.confirm('¿Está seguro que desea eliminar este publicador?')) {
       return;
     }
@@ -287,14 +179,12 @@ const ServiceReportAssistant = () => {
     updatedGroupData[activeGroup].publishers.splice(index, 1);
     setGroupData(updatedGroupData);
 
-    // Also update in monthly data
     const monthKey = `${currentYear}-${currentMonth}`;
     const updatedMonthlyData = { ...monthlyData };
     updatedMonthlyData[monthKey] = updatedGroupData;
     setMonthlyData(updatedMonthlyData);
   };
 
-  // Clear all data from current group
   const clearGroupData = () => {
     if (typeof activeGroup !== 'number') {
       console.error('Active group must be a number.');
@@ -304,14 +194,12 @@ const ServiceReportAssistant = () => {
     updatedGroupData[activeGroup].publishers = [];
     setGroupData(updatedGroupData);
 
-    // Also update in monthly data
     const monthKey = `${currentYear}-${currentMonth}`;
     const updatedMonthlyData = { ...monthlyData };
     updatedMonthlyData[monthKey] = updatedGroupData;
     setMonthlyData(updatedMonthlyData);
   };
 
-  // Clear specific fields (hours, courses, notes)
   const clearFields = () => {
     if (typeof activeGroup !== 'number') {
       console.error('Active group must be a number.');
@@ -325,35 +213,29 @@ const ServiceReportAssistant = () => {
     });
     setGroupData(updatedGroupData);
 
-    // Also update in monthly data
     const monthKey = `${currentYear}-${currentMonth}`;
     const updatedMonthlyData = { ...monthlyData };
     updatedMonthlyData[monthKey] = updatedGroupData;
     setMonthlyData(updatedMonthlyData);
   };
 
-  // Create new month (duplicate structure but clear data)
   const createNewMonth = () => {
     const newMonth = currentMonth === 11 ? 0 : currentMonth + 1;
     const newYear = currentMonth === 11 ? currentYear + 1 : currentYear;
     const newMonthKey = `${newYear}-${newMonth}`;
     
-    // Check if this month already exists
     if (monthlyData[newMonthKey]) {
-      // If exists, just switch to it
       setCurrentMonth(newMonth);
       setCurrentYear(newYear);
       setGroupData(monthlyData[newMonthKey]);
       return;
     }
     
-    // Save current month data
     const currentMonthKey = `${currentYear}-${currentMonth}`;
     const updatedMonthlyData = {...monthlyData};
     updatedMonthlyData[currentMonthKey] = {...groupData};
     
-    // Create new month with preserved structure but cleared data
-    const newMonthData = JSON.parse(JSON.stringify(groupData)); // Deep clone
+    const newMonthData = JSON.parse(JSON.stringify(groupData));
     for (let group in newMonthData) {
       newMonthData[group].publishers.forEach((publisher: Publisher) => {
         publisher.hours = 0;
@@ -362,20 +244,16 @@ const ServiceReportAssistant = () => {
       });
     }
     
-    // Add new month to monthly data
     updatedMonthlyData[newMonthKey] = newMonthData;
     
-    // Update available months list
     const updatedMonths = [
       ...availableMonths,
       { key: newMonthKey, year: newYear, month: newMonth }
     ].sort((a, b) => {
-      // Sort by year and month (newest first)
       if (a.year !== b.year) return b.year - a.year;
       return b.month - a.month;
     });
     
-    // Update state
     setMonthlyData(updatedMonthlyData);
     setAvailableMonths(updatedMonths);
     setCurrentMonth(newMonth);
@@ -383,7 +261,6 @@ const ServiceReportAssistant = () => {
     setGroupData(newMonthData);
   };
   
-  // Switch to a specific month
   const switchToMonth = (yearMonth: string) => {
     try {
       const [year, month] = yearMonth.split('-').map(Number);
@@ -406,19 +283,14 @@ const ServiceReportAssistant = () => {
     }
   };
 
-  // Export data to PDF (placeholder - would use a PDF library in real implementation)
   const exportToPdf = (groupNumber: number | 'averages') => {
     alert(`Exporting Group ${groupNumber} to PDF`);
-    // In a real app, this would generate a PDF using a library like jsPDF
   };
 
-  // Export all to PDF
   const exportAllToPdf = () => {
     alert('Exporting all groups to PDF');
-    // In a real app, this would generate a complete PDF
   };
 
-  // Ahora la función navigateToGroup quedará así
   const navigateToGroup = (groupNumber: ActiveGroupType) => {
     if (typeof groupNumber === 'number' && (groupNumber < 1 || groupNumber > 10)) {
       console.error('Número de grupo inválido');
@@ -427,7 +299,6 @@ const ServiceReportAssistant = () => {
     setActiveGroup(groupNumber);
   };
 
-  // Get month name
   const getMonthName = (monthIndex: number): string => {
     if (monthIndex < 0 || monthIndex > 11) {
       console.error('Índice de mes inválido');
@@ -441,7 +312,6 @@ const ServiceReportAssistant = () => {
     return months[monthIndex];
   };
 
-  // En el componente ServiceReportAssistant
   const toggleEditPublisher = (index: number) => {
     setGroupData(prevData => {
       const newData = JSON.parse(JSON.stringify(prevData));
@@ -459,7 +329,6 @@ const ServiceReportAssistant = () => {
       if (newData[activeGroup]?.publishers?.[index]) {
         const publisher = newData[activeGroup].publishers[index];
         
-        // Validar campos obligatorios
         if (!publisher.name.trim()) {
           alert('El nombre del publicador es obligatorio');
           return prevData;
@@ -475,11 +344,9 @@ const ServiceReportAssistant = () => {
           return prevData;
         }
 
-        // Quitar modo edición y marcar como no nuevo
         publisher.isEditing = false;
         publisher.isNew = false;
 
-        // Actualizar monthlyData
         const monthKey = `${currentYear}-${currentMonth}`;
         setMonthlyData(prevMonthlyData => ({
           ...prevMonthlyData,
@@ -490,14 +357,12 @@ const ServiceReportAssistant = () => {
     });
   };
 
-  // Nueva función para actualizar el superintendente o auxiliar del grupo
   const updateGroupLeader = (field: 'superintendent' | 'assistant', value: string) => {
     setGroupData(prevData => {
       const newData = JSON.parse(JSON.stringify(prevData));
       if (newData[activeGroup]) {
         newData[activeGroup][field] = value;
         
-        // Actualizar monthlyData al mismo tiempo
         const monthKey = `${currentYear}-${currentMonth}`;
         setMonthlyData(prevMonthlyData => ({
           ...prevMonthlyData,
@@ -546,7 +411,6 @@ const ServiceReportAssistant = () => {
       </header>
 
       <div className="flex flex-1 overflow-hidden">
-        {/* Panel de navegación */}
         <nav 
           className={`
             fixed md:relative inset-y-0 left-0 bg-black 
@@ -556,7 +420,6 @@ const ServiceReportAssistant = () => {
             hidden md:block
           `}
         >
-          {/* Botón para expandir/contraer en desktop */}
           <div className={`
             hidden md:flex justify-${isDesktopPanelExpanded ? 'end' : 'center'}
             p-2 transition-all duration-300
@@ -570,7 +433,6 @@ const ServiceReportAssistant = () => {
             </button>
           </div>
 
-          {/* Contenido del panel */}
           <div className={`${isDesktopPanelExpanded ? 'px-4' : 'px-2'}`}>
             <h2 className={`
               text-lg text-white font-semibold mb-4 transition-opacity duration-300
@@ -579,7 +441,6 @@ const ServiceReportAssistant = () => {
               Navegación
             </h2>
             <ul className="space-y-2">
-              {/* Sección de Grupos */}
               {[...Array(10)].map((_, i) => (
                 <li key={i}>
                   <button 
@@ -603,10 +464,8 @@ const ServiceReportAssistant = () => {
                 </li>
               ))}
 
-              {/* Separador */}
               <li className="border-t border-gray-300 my-2"></li>
 
-              {/* Promedios */}
               <li>
                 <button 
                   className={`
@@ -624,10 +483,8 @@ const ServiceReportAssistant = () => {
                 </button>
               </li>
 
-              {/* Separador */}
               <li className="border-t border-gray-300 my-2"></li>
 
-              {/* Utilidades */}
               <li>
                 <button 
                   className={`w-full rounded flex items-center justify-${isDesktopPanelExpanded ? 'start' : 'center'} p-2 bg-black text-white hover:bg-gray-300 hover:text-black`}
@@ -654,7 +511,6 @@ const ServiceReportAssistant = () => {
           </div>
         </nav>
 
-        {/* Versión móvil del panel */}
         <div className="md:hidden">
           {!isNavOpen && (
             <button
@@ -666,13 +522,12 @@ const ServiceReportAssistant = () => {
           )}
         </div>
 
-        {/* Content area */}
         <main className={`
           flex-1 p-4 overflow-y-auto transition-all duration-300
           ${isDesktopPanelExpanded ? 'md:ml-15' : 'md:ml-5'}
         `}>
           {activeGroup === 'averages' ? (
-            <AveragesTable totals={totals} />
+            <AveragesTable totals={totals} currentMonth={currentMonth} currentYear={currentYear} />
           ) : (
             <GroupTable 
               groupNumber={activeGroup}
@@ -680,9 +535,9 @@ const ServiceReportAssistant = () => {
               addPublisher={addPublisher}
               updatePublisher={updatePublisher}
               removePublisher={removePublisher}
-              savePublisher={savePublisher}           // Pasar la función
-              toggleEditPublisher={toggleEditPublisher} // Pasar la función
-              updateGroupLeader={updateGroupLeader} // Pasar la función
+              savePublisher={savePublisher}
+              toggleEditPublisher={toggleEditPublisher}
+              updateGroupLeader={updateGroupLeader}
             />
           )}
         </main>
@@ -691,18 +546,16 @@ const ServiceReportAssistant = () => {
   );
 };
 
-// Group table component
 const GroupTable = ({ 
   groupNumber, 
   groupData, 
   addPublisher, 
   updatePublisher, 
   removePublisher,
-  savePublisher,           // Agregar parámetro
-  toggleEditPublisher,      // Agregar parámetro
-  updateGroupLeader // Agregar parámetro
+  savePublisher,
+  toggleEditPublisher,
+  updateGroupLeader
 }: GroupTableProps) => {
-  // Agregar esta función de validación
   const isUnbaptizedPublisher = (publisher: Publisher): boolean => {
     return publisher.serviceType === 'unbaptizedPublisher';
   };
@@ -712,12 +565,10 @@ const GroupTable = ({
           publisher.serviceType === 'unbaptizedPublisher';
   };
 
-  // En el componente GroupTable, agregar esta función de validación
   const isInactive = (publisher: Publisher): boolean => {
     return publisher.participation === 'inactive';
   };
 
-  // Dentro del componente GroupTable, agregar estas funciones de cálculo:
   const calculateSummary = (publishers: Publisher[]) => {
     const summary = {
       unbaptizedPublisher: { informes: 0, horas: 0, cursos: 0 },
@@ -729,20 +580,16 @@ const GroupTable = ({
     };
   
     publishers.forEach(pub => {
-      // No contar publicadores en edición o nuevos
       if (pub.isEditing || pub.isNew) return;
 
       if (pub.serviceType && pub.serviceType in summary) {
-        // Solo contar si está activo
         if (pub.participation === 'active') {
           summary[pub.serviceType as keyof typeof summary].informes++;
           
-          // Sumar horas (excepto para publicadores regulares y no bautizados)
           if (!isRegularPublisher(pub)) {
             summary[pub.serviceType as keyof typeof summary].horas += (pub.hours || 0);
           }
           
-          // Sumar cursos
           summary[pub.serviceType as keyof typeof summary].cursos += (pub.courses || 0);
         }
       }
@@ -763,7 +610,6 @@ const GroupTable = ({
     };
   
     publishers.forEach(pub => {
-      // No contar publicadores en edición o nuevos
       if (pub.isEditing || pub.isNew) return;
 
       if (pub.specialServants && pub.specialServants in counts) {
@@ -774,18 +620,16 @@ const GroupTable = ({
     return counts;
   };
 
-  // En el componente GroupTable, modificar la función calculatePrivileges
   const calculatePrivileges = (publishers: Publisher[]) => {
     const counts = {
       elders: 0,
       ministerialServants: 0,
       inactivePublishers: 0,
-      otherSheep: 0,    // Añadir conteo de Otras Ovejas
-      anointed: 0       // Añadir conteo de Ungidos
+      otherSheep: 0,
+      anointed: 0
     };
   
     publishers.forEach(pub => {
-      // No contar publicadores en edición o nuevos
       if (pub.isEditing || pub.isNew) return;
 
       if (pub.privilege === 'elder') {
@@ -797,7 +641,6 @@ const GroupTable = ({
       if (pub.participation === 'inactive') {
         counts.inactivePublishers++;
       }
-      // Añadir conteo de esperanzas
       if (pub.hope === 'otherSheep') {
         counts.otherSheep++;
       }
@@ -809,7 +652,6 @@ const GroupTable = ({
     return counts;
   };
 
-  // En el componente GroupTable, agregar esta nueva función para calcular totales por tipo
   const calculatePublisherTotals = (publishers: Publisher[]) => {
     const totals = {
       unbaptizedPublishers: 0,
@@ -821,7 +663,6 @@ const GroupTable = ({
     };
   
     publishers.forEach(pub => {
-      // No contar publicadores en edición o nuevos
       if (pub.isEditing || pub.isNew) return;
 
       switch (pub.serviceType) {
@@ -866,26 +707,24 @@ const GroupTable = ({
   }
   if (!groupData?.publishers) return <div className='p-4 text-center'><p>No hay datos disponibles para este grupo.</p></div>;
 
-  // En el componente GroupTable, modificar el encabezado del grupo
   const getGroupColor = (groupNumber: number): string => {
     const colors = [
-      'bg-blue-500',   // Grupo 1
-      'bg-green-500',  // Grupo 2
-      'bg-yellow-500', // Grupo 3
-      'bg-blue-500',   // Grupo 4
-      'bg-green-500',  // Grupo 5
-      'bg-indigo-500', // Grupo 6
-      'bg-orange-500', // Grupo 7
-      'bg-pink-300',   // Grupo 8
-      'bg-purple-500', // Grupo 9
-      'bg-teal-500'    // Grupo 10
+      'bg-blue-500',
+      'bg-green-500',
+      'bg-yellow-500',
+      'bg-blue-500',
+      'bg-green-500',
+      'bg-indigo-500',
+      'bg-orange-500',
+      'bg-pink-300',
+      'bg-purple-500',
+      'bg-teal-500'
     ];
     return colors[groupNumber - 1] || 'bg-gray-500';
   };
 
   return (
     <div>
-      {/* Encabezado del grupo con superintendente y auxiliar */}
       <div className="mb-4">
         <h2 className={`text-lg font-bold ${getGroupColor(groupNumber)} text-white p-1 text-center`}>
           GRUPO {groupNumber}
@@ -916,7 +755,6 @@ const GroupTable = ({
         </div>
       </div>
 
-      {/* Botón de agregar publicador */}
       <div className="flex justify-end mb-4">
         <button 
           className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm"
@@ -933,7 +771,6 @@ const GroupTable = ({
               <th className="border border-black p-1 text-xs">Publicadores</th>
               <th className="border border-black p-1 text-xs w-56">Tipo de Servicio</th>
               <th className="border border-black p-1 text-xs">Participación</th>
-              {/* Reducir el ancho de las columnas Horas y Cursos */}
               <th className="border border-black p-1 text-xs w-20">Horas</th>
               <th className="border border-black p-1 text-xs w-20">Cursos</th>
               <th className="border border-black p-1 text-xs">Notas</th>
@@ -1013,7 +850,6 @@ const GroupTable = ({
                     disabled={!publisher.isEditing}
                   />
                 </td>
-                {/* Modificar el select de privilegio */}
                 <td className="border border-black p-1">
                   <select 
                     className="w-full p-1 border border-black rounded text-center text-sm"
@@ -1027,7 +863,6 @@ const GroupTable = ({
                   </select>
                 </td>
 
-                {/* Modificar el select de siervos especiales */}
                 <td className="border border-black p-1">
                   <select 
                     className="w-full p-1 border border-black rounded text-center text-sm"
@@ -1107,11 +942,9 @@ const GroupTable = ({
         </table>
       </div>
 
-      {/* Group Summary */}
       <div className="mt-4">
         <h3 className="text-base font-bold mb-2">Resumen del Grupo</h3>
         <div className="grid grid-cols-3 gap-2">
-          {/* Primera columna - Informes por Tipo de Publicador */}
           <div className="bg-white p-2 rounded border border-black shadow">
             <h4 className="text-sm font-semibold mb-1">Informes por Tipo de Publicador</h4>
             <table className="w-full border text-sm">
@@ -1180,7 +1013,6 @@ const GroupTable = ({
             </table>
           </div>
   
-          {/* Segunda columna - Siervos Especiales */}
           <div className="bg-white p-2 rounded border border-black shadow">
             <h4 className="text-sm font-semibold mb-1">Siervos Especiales / Voluntarios</h4>
             <table className="w-full border text-sm">
@@ -1209,7 +1041,6 @@ const GroupTable = ({
             </table>
           </div>
 
-          {/* Nueva tercera columna - Estadísticas del Grupo */}
           <div className="bg-white p-2 rounded border border-black shadow">
             <h4 className="text-sm font-semibold mb-1">Estadísticas del Grupo</h4>
             <table className="w-full border text-sm">
@@ -1236,7 +1067,6 @@ const GroupTable = ({
                         <td className="border border-black p-1">Publicadores Inactivos del mes</td>
                         <td className="border border-black p-1 text-center">{stats.inactivePublishers}</td>
                       </tr>
-                      {/* Quitar bg-gray-50 de estas filas */}
                       <tr>
                         <td className="border border-black p-1">Otras Ovejas</td>
                         <td className="border border-black p-1 text-center">{stats.otherSheep}</td>
@@ -1257,12 +1087,19 @@ const GroupTable = ({
   );
 };
 
-// Averages table component
-const AveragesTable = ({ totals }: AveragesTableProps) => {
+const AveragesTable = ({ totals, currentMonth, currentYear }: AveragesTableProps) => {
+  const getMonthName = (monthIndex: number): string => {
+    const months = [
+      'ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO',
+      'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'
+    ];
+    return months[monthIndex] || '';
+  };
+
   return (
     <div className="max-w-4xl mx-auto">
       <h2 className="text-base font-bold bg-black text-white p-2 text-center mb-2">
-        PROMEDIOS TOTALES DEL MES DE
+        PROMEDIOS TOTALES DEL MES DE {getMonthName(currentMonth)} {currentYear}
       </h2>
       
       {/* Publicadores No Bautizados */}
@@ -1274,27 +1111,33 @@ const AveragesTable = ({ totals }: AveragesTableProps) => {
           <tbody>
             <tr>
               <td className="border border-black p-1">Informaron</td>
-              <td className="border border-black p-1 text-center w-28">0</td>
+              <td className="border border-black p-1 text-center w-28">{totals.unbaptizedPublishers.informes}</td>
               <td className="border border-black p-1 text-center w-28">Promedio</td>
-              <td className="border border-black p-1 text-center w-28">0%</td>
+              <td className="border border-black p-1 text-center w-28">
+                {formatPercentage(totals.unbaptizedPublishers.informes, totals.unbaptizedPublishers.total)}
+              </td>
             </tr>
             <tr>
               <td className="border border-black p-1">Cursos</td>
-              <td className="border border-black p-1 text-center">0</td>
+              <td className="border border-black p-1 text-center">{totals.unbaptizedPublishers.cursos}</td>
               <td className="border border-black p-1 text-center">Promedio</td>
-              <td className="border border-black p-1 text-center">0.00</td>
+              <td className="border border-black p-1 text-center">
+                {formatNumber(totals.unbaptizedPublishers.promedioCursos)}
+              </td>
             </tr>
             <tr className="bg-gray-100">
               <td className="border border-black p-1">Total de Publicadores No Bautizados</td>
-              <td className="border border-black p-1 text-center" colSpan={1}>0</td>
+              <td className="border border-black p-1 text-center" colSpan={1}>
+                {totals.unbaptizedPublishers.total}
+              </td>
               <td className="border border-black p-1 text-center" colSpan={2}></td>
             </tr>
           </tbody>
         </table>
-            </div>
+      </div>
 
-            {/* Publicadores */}
-            <div className="mb-1">
+      {/* Publicadores */}
+      <div className="mb-1">
         <h3 className="font-bold bg-black text-white p-1 text-sm text-center">
           Publicadores
         </h3>
@@ -1302,27 +1145,33 @@ const AveragesTable = ({ totals }: AveragesTableProps) => {
           <tbody>
             <tr>
               <td className="border border-black p-1">Informaron</td>
-              <td className="border border-black p-1 text-center w-28">0</td>
+              <td className="border border-black p-1 text-center w-28">{totals.publishers.informes}</td>
               <td className="border border-black p-1 text-center w-28">Promedio</td>
-              <td className="border border-black p-1 text-center w-28">0%</td>
+              <td className="border border-black p-1 text-center w-28">
+                {formatPercentage(totals.publishers.informes, totals.publishers.total)}
+              </td>
             </tr>
             <tr>
               <td className="border border-black p-1">Cursos</td>
-              <td className="border border-black p-1 text-center">0</td>
+              <td className="border border-black p-1 text-center">{totals.publishers.cursos}</td>
               <td className="border border-black p-1 text-center">Promedio</td>
-              <td className="border border-black p-1 text-center">0.00</td>
+              <td className="border border-black p-1 text-center">
+                {formatNumber(totals.publishers.promedioCursos)}
+              </td>
             </tr>
             <tr className="bg-gray-100">
               <td className="border border-black p-1">Total de Publicadores</td>
-              <td className="border border-black p-1 text-center" colSpan={1}>0</td>
+              <td className="border border-black p-1 text-center" colSpan={1}>
+                {totals.publishers.total}
+              </td>
               <td className="border border-black p-1 text-center" colSpan={2}></td>
             </tr>
           </tbody>
         </table>
-            </div>
+      </div>
 
-            {/* Precursores Auxiliares */}
-            <div className="mb-1">
+      {/* Precursores Auxiliares */}
+      <div className="mb-1">
         <h3 className="font-bold bg-black text-white p-1 text-sm text-center">
           Precursores Auxiliares
         </h3>
@@ -1330,30 +1179,38 @@ const AveragesTable = ({ totals }: AveragesTableProps) => {
           <tbody>
             <tr>
               <td className="border border-black p-1">Informaron</td>
-              <td className="border border-black p-1 text-center w-28">0</td>
+              <td className="border border-black p-1 text-center w-28">{totals.auxiliarPioneers.informes}</td>
               <td className="border border-black p-1 text-center w-28">Promedio</td>
-              <td className="border border-black p-1 text-center w-28">0%</td>
+              <td className="border border-black p-1 text-center w-28">
+                {formatPercentage(totals.auxiliarPioneers.informes, totals.auxiliarPioneers.total)}
+              </td>
             </tr>
             <tr>
               <td className="border border-black p-1">Horas</td>
-              <td className="border border-black p-1 text-center">0</td>
+              <td className="border border-black p-1 text-center">{totals.auxiliarPioneers.horas}</td>
               <td className="border border-black p-1 text-center">Promedio</td>
-              <td className="border border-black p-1 text-center">0.00</td>
+              <td className="border border-black p-1 text-center">
+                {formatNumber(totals.auxiliarPioneers.promedioHoras)}
+              </td>
             </tr>
             <tr>
               <td className="border border-black p-1">Cursos</td>
-              <td className="border border-black p-1 text-center">0</td>
+              <td className="border border-black p-1 text-center">{totals.auxiliarPioneers.cursos}</td>
               <td className="border border-black p-1 text-center">Promedio</td>
-              <td className="border border-black p-1 text-center">0.00</td>
+              <td className="border border-black p-1 text-center">
+                {formatNumber(totals.auxiliarPioneers.promedioCursos)}
+              </td>
             </tr>
             <tr className="bg-gray-100">
               <td className="border border-black p-1">Total de Precursores Auxiliares</td>
-              <td className="border border-black p-1 text-center" colSpan={1}>0</td>
+              <td className="border border-black p-1 text-center" colSpan={1}>
+                {totals.auxiliarPioneers.total}
+              </td>
               <td className="border border-black p-1 text-center" colSpan={2}></td>
             </tr>
           </tbody>
         </table>
-            </div>
+      </div>
 
       {/* Precursores Regulares */}
       <div className="mb-1">
@@ -1364,33 +1221,41 @@ const AveragesTable = ({ totals }: AveragesTableProps) => {
           <tbody>
             <tr>
               <td className="border border-black p-1">Informaron</td>
-              <td className="border border-black p-1 text-center w-28">0</td>
+              <td className="border border-black p-1 text-center w-28">{totals.regularPioneers.informes}</td>
               <td className="border border-black p-1 text-center w-28">Promedio</td>
-              <td className="border border-black p-1 text-center w-28">0%</td>
+              <td className="border border-black p-1 text-center w-28">
+                {formatPercentage(totals.regularPioneers.informes, totals.regularPioneers.total)}
+              </td>
             </tr>
             <tr>
               <td className="border border-black p-1">Horas</td>
-              <td className="border border-black p-1 text-center">0</td>
+              <td className="border border-black p-1 text-center">{totals.regularPioneers.horas}</td>
               <td className="border border-black p-1 text-center">Promedio</td>
-              <td className="border border-black p-1 text-center">0.00</td>
+              <td className="border border-black p-1 text-center">
+                {formatNumber(totals.regularPioneers.promedioHoras)}
+              </td>
             </tr>
             <tr>
               <td className="border border-black p-1">Cursos</td>
-              <td className="border border-black p-1 text-center">0</td>
+              <td className="border border-black p-1 text-center">{totals.regularPioneers.cursos}</td>
               <td className="border border-black p-1 text-center">Promedio</td>
-              <td className="border border-black p-1 text-center">0</td>
+              <td className="border border-black p-1 text-center">
+                {formatNumber(totals.regularPioneers.promedioCursos)}
+              </td>
             </tr>
             <tr className="bg-gray-100">
               <td className="border border-black p-1">Total de Precursores Regulares</td>
-              <td className="border border-black p-1 text-center" colSpan={1}>0</td>
+              <td className="border border-black p-1 text-center" colSpan={1}>
+                {totals.regularPioneers.total}
+              </td>
               <td className="border border-black p-1 text-center" colSpan={2}></td>
             </tr>
           </tbody>
         </table>
-            </div>
+      </div>
 
-            {/* Precursores Especiales */}
-            <div className="mb-1">
+      {/* Precursores Especiales */}
+      <div className="mb-1">
         <h3 className="font-bold bg-black text-white p-1 text-sm text-center">
           Precursores Especiales
         </h3>
@@ -1398,33 +1263,41 @@ const AveragesTable = ({ totals }: AveragesTableProps) => {
           <tbody>
             <tr>
               <td className="border border-black p-1">Informaron</td>
-              <td className="border border-black p-1 text-center w-28">0</td>
+              <td className="border border-black p-1 text-center w-28">{totals.specialPioneers.informes}</td>
               <td className="border border-black p-1 text-center w-28">Promedio</td>
-              <td className="border border-black p-1 text-center w-28">0%</td>
+              <td className="border border-black p-1 text-center w-28">
+                {formatPercentage(totals.specialPioneers.informes, totals.specialPioneers.total)}
+              </td>
             </tr>
             <tr>
               <td className="border border-black p-1">Horas</td>
-              <td className="border border-black p-1 text-center">0</td>
+              <td className="border border-black p-1 text-center">{totals.specialPioneers.horas}</td>
               <td className="border border-black p-1 text-center">Promedio</td>
-              <td className="border border-black p-1 text-center">0.00</td>
+              <td className="border border-black p-1 text-center">
+                {formatNumber(totals.specialPioneers.promedioHoras)}
+              </td>
             </tr>
             <tr>
               <td className="border border-black p-1">Cursos</td>
-              <td className="border border-black p-1 text-center">0</td>
+              <td className="border border-black p-1 text-center">{totals.specialPioneers.cursos}</td>
               <td className="border border-black p-1 text-center">Promedio</td>
-              <td className="border border-black p-1 text-center">0.00</td>
+              <td className="border border-black p-1 text-center">
+                {formatNumber(totals.specialPioneers.promedioCursos)}
+              </td>
             </tr>
             <tr className="bg-gray-100">
               <td className="border border-black p-1">Total de Precursores Especiales</td>
-              <td className="border border-black p-1 text-center" colSpan={1}>0</td>
+              <td className="border border-black p-1 text-center" colSpan={1}>
+                {totals.specialPioneers.total}
+              </td>
               <td className="border border-black p-1 text-center" colSpan={2}></td>
             </tr>
           </tbody>
         </table>
-            </div>
+      </div>
 
-            {/* Misioneros */}
-            <div className="mb-1">
+      {/* Misioneros */}
+      <div className="mb-1">
         <h3 className="font-bold bg-black text-white p-1 text-sm text-center">
           Misioneros
         </h3>
@@ -1432,30 +1305,38 @@ const AveragesTable = ({ totals }: AveragesTableProps) => {
           <tbody>
             <tr>
               <td className="border border-black p-1">Informaron</td>
-              <td className="border border-black p-1 text-center w-28">0</td>
+              <td className="border border-black p-1 text-center w-28">{totals.missionaries.informes}</td>
               <td className="border border-black p-1 text-center w-28">Promedio</td>
-              <td className="border border-black p-1 text-center w-28">0.00%</td>
+              <td className="border border-black p-1 text-center w-28">
+                {formatPercentage(totals.missionaries.informes, totals.missionaries.total)}
+              </td>
             </tr>
             <tr>
               <td className="border border-black p-1">Horas</td>
-              <td className="border border-black p-1 text-center">0</td>
+              <td className="border border-black p-1 text-center">{totals.missionaries.horas}</td>
               <td className="border border-black p-1 text-center">Promedio</td>
-              <td className="border border-black p-1 text-center">0.00</td>
+              <td className="border border-black p-1 text-center">
+                {formatNumber(totals.missionaries.promedioHoras)}
+              </td>
             </tr>
             <tr>
               <td className="border border-black p-1">Cursos</td>
-              <td className="border border-black p-1 text-center">0</td>
+              <td className="border border-black p-1 text-center">{totals.missionaries.cursos}</td>
               <td className="border border-black p-1 text-center">Promedio</td>
-              <td className="border border-black p-1 text-center">0.00</td>
+              <td className="border border-black p-1 text-center">
+                {formatNumber(totals.missionaries.promedioCursos)}
+              </td>
             </tr>
             <tr className="bg-gray-100">
               <td className="border border-black p-1">Total de Misioneros</td>
-              <td className="border border-black p-1 text-center" colSpan={1}>0</td>
+              <td className="border border-black p-1 text-center" colSpan={1}>
+                {totals.missionaries.total}
+              </td>
               <td className="border border-black p-1 text-center" colSpan={2}></td>
             </tr>
           </tbody>
         </table>
-            </div>
+      </div>
 
       {/* Siervos Especiales */}
       <div className="mb-1">
@@ -1466,27 +1347,39 @@ const AveragesTable = ({ totals }: AveragesTableProps) => {
           <tbody>
             <tr>
               <td className="border border-black p-1 w-[62.5%]">Superintendentes de Circuito</td>
-              <td className="border border-black p-1 text-center w-[42%]">0</td>
+              <td className="border border-black p-1 text-center w-[42%]">
+                {totals.specialServants.circuitOverseer}
+              </td>
             </tr>
             <tr>
               <td className="border border-black p-1 w-[62.5%]">Betelitas</td>
-              <td className="border border-black p-1 text-center w-[42%]">0</td>
+              <td className="border border-black p-1 text-center w-[42%]">
+                {totals.specialServants.bethelite}
+              </td>
             </tr>
             <tr>
               <td className="border border-black p-1 w-[62.5%]">Siervos de construcción</td>
-              <td className="border border-black p-1 text-center w-[42%]">0</td>
+              <td className="border border-black p-1 text-center w-[42%]">
+                {totals.specialServants.construction}
+              </td>
             </tr>
             <tr>
               <td className="border border-black p-1 w-[62.5%]">Instructores de Escuelas Teocráticas</td>
-              <td className="border border-black p-1 text-center w-[42%]">0</td>
+              <td className="border border-black p-1 text-center w-[42%]">
+                {totals.specialServants.instructor}
+              </td>
             </tr>
             <tr>
               <td className="border border-black p-1 w-[62.5%]">Voluntarios A-2</td>
-              <td className="border border-black p-1 text-center w-[42%]">0</td>
+              <td className="border border-black p-1 text-center w-[42%]">
+                {totals.specialServants.volunteerA2}
+              </td>
             </tr>
             <tr>
               <td className="border border-black p-1 w-[62.5%]">Voluntarios A-19</td>
-              <td className="border border-black p-1 text-center w-[42%]">0</td>
+              <td className="border border-black p-1 text-center w-[42%]">
+                {totals.specialServants.volunteerA19}
+              </td>
             </tr>
           </tbody>
         </table>
@@ -1501,40 +1394,52 @@ const AveragesTable = ({ totals }: AveragesTableProps) => {
           <tbody>
             <tr>
               <td className="border border-black p-1 w-[62.5%]">Otras Ovejas</td>
-              <td className="border border-black p-1 text-center w-[42%]">0</td>
+              <td className="border border-black p-1 text-center w-[42%]">
+                {totals.otherStats.otherSheep}
+              </td>
             </tr>
             <tr>
               <td className="border border-black p-1 w-[62.5%]">Ungidos</td>
-              <td className="border border-black p-1 text-center w-[42%]">0</td>
+              <td className="border border-black p-1 text-center w-[42%]">
+                {totals.otherStats.anointed}
+              </td>
             </tr>
             <tr>
               <td className="border border-black p-1 w-[62.5%]">Siervos Ministeriales</td>
-              <td className="border border-black p-1 text-center w-[42%]">0</td>
+              <td className="border border-black p-1 text-center w-[42%]">
+                {totals.privileges.ministerialServants}
+              </td>
             </tr>
             <tr>
               <td className="border border-black p-1 w-[62.5%]">Ancianos</td>
-              <td className="border border-black p-1 text-center w-[42%]">0</td>
+              <td className="border border-black p-1 text-center w-[42%]">
+                {totals.privileges.elders}
+              </td>
             </tr>
             <tr>
               <td className="border border-black p-1 w-[62.5%]">Publicadores Activos</td>
-              <td className="border border-black p-1 text-center w-[42%]">0</td>
+              <td className="border border-black p-1 text-center w-[42%]">
+                {totals.otherStats.activePublishers}
+              </td>
             </tr>
             <tr>
               <td className="border border-black p-1 w-[62.5%]">Publicadores Inactivos del mes</td>
-              <td className="border border-black p-1 text-center w-[42%]">0</td>
+              <td className="border border-black p-1 text-center w-[42%]">
+                {totals.otherStats.inactivePublishers}
+              </td>
             </tr>
             <tr>
               <td className="border border-black p-1 w-[62.5%]">Total de Publicadores de la Congregación</td>
-              <td className="border border-black p-1 text-center w-[42%]">0</td>
+              <td className="border border-black p-1 text-center w-[42%]">
+                {totals.otherStats.totalCongregation}
+              </td>
             </tr>
           </tbody>
         </table>
       </div>
 
-      {/* Congregación */}
       <div className="font-bold text-center bg-black text-white p-1 text-sm">
         <div>Congregación</div>
-        <div></div>
       </div>
     </div>
   );
