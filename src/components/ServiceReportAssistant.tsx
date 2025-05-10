@@ -287,6 +287,10 @@ const ServiceReportAssistant = () => {
     alert(`Exporting Group ${groupNumber} to PDF`);
   };
 
+  const exportAveragesToPdf = () => {
+    alert('Exporting averages to PDF');
+  };
+
   const exportAllToPdf = () => {
     alert('Exporting all groups to PDF');
   };
@@ -504,6 +508,18 @@ const ServiceReportAssistant = () => {
                   >
                     <Download size={18} />
                     {isDesktopPanelExpanded && <span className="ml-2">Exportar Grupo Actual</span>}
+                  </button>
+                </li>
+              )}
+              {typeof activeGroup === 'string' && (
+                <li>
+                  <button 
+                    className={`w-full rounded flex items-center justify-${isDesktopPanelExpanded ? 'start' : 'center'} p-2 bg-black text-white hover:bg-gray-300 hover:text-black`}
+                    onClick={() => exportAveragesToPdf()}
+                    title={!isDesktopPanelExpanded ? "Exportar Promedios" : ''}
+                  >
+                    <Download size={18} />
+                    {isDesktopPanelExpanded && <span className="ml-2">Exportar Promedios</span>}
                   </button>
                 </li>
               )}
