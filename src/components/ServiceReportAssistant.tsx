@@ -1233,7 +1233,7 @@ const GroupTable = ({
                         <td className="border border-black p-1 text-center">{stats.ministerialServants}</td>
                       </tr>
                       <tr>
-                        <td className="border border-black p-1">Publicadores Inactivos</td>
+                        <td className="border border-black p-1">Publicadores Inactivos del mes</td>
                         <td className="border border-black p-1 text-center">{stats.inactivePublishers}</td>
                       </tr>
                       {/* Quitar bg-gray-50 de estas filas */}
